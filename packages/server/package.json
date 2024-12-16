@@ -17,6 +17,9 @@
     "express": "^5.0.0",
     "jsonwebtoken": "^9.0.2",
     "jwks-rsa": "^3.1.0",
-    "p-retry": "^6.2.1"
+    "p-retry": "^6.2.1",
+    "pino": "^9.5.0",
+    "pino-http": "^10.3.0",
+    "pino-pretty": "^13.0.0"
   }
 }

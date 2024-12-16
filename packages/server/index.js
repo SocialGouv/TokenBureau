@@ -4,13 +4,31 @@ import jwksClient from 'jwks-rsa';
 import { createAppAuth } from '@octokit/auth-app';
 import { request } from '@octokit/request';
 import pRetry from 'p-retry';
+import pino from 'pino';
+import pinoHttp from 'pino-http';
 import config from './config.js';
+
+// Initialize logger
+const logger = pino(config.logger);
 
 const app = express();
 const port = config.port;
 
-// Enable more detailed logging
-const DEBUG = process.env.DEBUG === 'true';
+// Add request logging middleware
+app.use(pinoHttp({
+  logger,
+  customLogLevel: function (res, err) {
+    if (res.statusCode >= 400 && res.statusCode < 500) return 'warn'
+    if (res.statusCode >= 500 || err) return 'error'
+    return 'info'
+  },
+  customSuccessMessage: function (res) {
+    return `request completed with status ${res.statusCode}`
+  },
+  customErrorMessage: function (error, res) {
+    return `request failed with status ${res.statusCode}: ${error.message}`
+  }
+}));
 
 // Middleware
 app.use(express.json());
@@ -24,11 +42,11 @@ const client = jwksClient({
 
 // Function to get signing key
 function getKey(header, callback) {
-  if (DEBUG) console.log('Getting signing key for kid:', header.kid);
+  logger.debug({ kid: header.kid }, 'Getting signing key');
   
   client.getSigningKey(header.kid, (err, key) => {
     if (err) {
-      console.error('Error getting signing key:', err);
+      logger.error({ err }, 'Error getting signing key');
       return callback(err);
     }
     const signingKey = key.getPublicKey();
@@ -40,10 +58,7 @@ async function generateToken(owner, repository) {
   // Extract repository name if it includes owner
   const repoName = repository.includes('/') ? repository.split('/')[1] : repository;
 
-  if (DEBUG) {
-    console.log('Starting token generation for:', { owner, repository: repoName });
-    console.log('App ID:', config.github.appId);
-  }
+  logger.debug({ owner, repository: repoName }, 'Starting token generation');
 
   try {
     // Create app-level auth instance
@@ -65,10 +80,10 @@ async function generateToken(owner, repository) {
     // Get installations using app-level auth
     const { data: installations } = await appRequest('GET /app/installations');
 
-    if (DEBUG) {
-      console.log('Found installations:', installations.length);
-      console.log('Installation accounts:', installations.map(i => i.account.login));
-    }
+    logger.debug({ 
+      count: installations.length,
+      accounts: installations.map(i => i.account.login)
+    }, 'Found installations');
 
     const installation = installations.find(inst => 
       inst.account.login.toLowerCase() === owner.toLowerCase()
@@ -78,12 +93,10 @@ async function generateToken(owner, repository) {
       throw new Error(`No installation found for owner: ${owner}`);
     }
 
-    if (DEBUG) {
-      console.log('Found installation:', {
-        id: installation.id,
-        account: installation.account.login
-      });
-    }
+    logger.debug({
+      id: installation.id,
+      account: installation.account.login
+    }, 'Found installation');
 
     // Create installation-level auth instance
     const installationAuth = createAppAuth({
@@ -109,12 +122,10 @@ async function generateToken(owner, repository) {
         repo: repoName
       });
 
-      if (DEBUG) {
-        console.log('Found repository:', {
-          id: repo.id,
-          full_name: repo.full_name
-        });
-      }
+      logger.debug({
+        id: repo.id,
+        full_name: repo.full_name
+      }, 'Found repository');
 
       // Get installation access token using installation auth
       const { token, expiresAt } = await installationAuth({
@@ -130,10 +141,7 @@ async function generateToken(owner, repository) {
         throw new Error('Failed to generate installation token');
       }
 
-      if (DEBUG) {
-        console.log('Generated installation token');
-        console.log('Token expires at:', expiresAt);
-      }
+      logger.debug({ expiresAt }, 'Generated installation token');
 
       return {
         token,
@@ -147,15 +155,15 @@ async function generateToken(owner, repository) {
       throw error;
     }
   } catch (error) {
-    console.error('Error in token generation:', error);
-    if (error.response) {
-      console.error('GitHub API Error:', {
+    logger.error({ 
+      error: error.message,
+      response: error.response ? {
         status: error.response.status,
         statusText: error.response.statusText,
         data: error.response.data,
         url: error.response.url
-      });
-    }
+      } : undefined
+    }, 'Error in token generation');
     throw error;
   }
 }
@@ -167,19 +175,17 @@ function extractAndDecodeToken(authHeader) {
 
   let tokenPayload = authHeader.split(' ')[1];
 
-  if (DEBUG) {
-    console.log('Raw token payload:', tokenPayload);
-  }
+  logger.debug({ tokenPayload }, 'Raw token payload received');
 
   // Try to parse as JSON first
   try {
     const parsed = JSON.parse(tokenPayload);
     if (parsed.value) {
-      if (DEBUG) console.log('Found token in JSON value field');
+      logger.debug('Found token in JSON value field');
       tokenPayload = parsed.value;
     }
   } catch (e) {
-    if (DEBUG) console.log('Token is not in JSON format, using as is');
+    logger.debug('Token is not in JSON format, using as is');
   }
 
   // Remove any whitespace or quotes
@@ -196,21 +202,21 @@ function extractAndDecodeToken(authHeader) {
 
 // Route to generate GitHub App token
 app.post('/generate-token', async (req, res) => {
+  const reqLog = req.log;
+  
   try {
-    if (DEBUG) {
-      console.log('Authorization header:', req.headers.authorization);
-    }
+    reqLog.debug({ auth: req.headers.authorization }, 'Processing token generation request');
 
     const tokenPayload = extractAndDecodeToken(req.headers.authorization);
 
-    if (DEBUG) {
-      try {
-        const [header, payload] = tokenPayload.split('.').slice(0, 2);
-        console.log('Token header:', Buffer.from(header, 'base64').toString());
-        console.log('Token payload:', Buffer.from(payload, 'base64').toString());
-      } catch (error) {
-        console.error('Error decoding token parts:', error);
-      }
+    try {
+      const [header, payload] = tokenPayload.split('.').slice(0, 2);
+      reqLog.debug({
+        header: JSON.parse(Buffer.from(header, 'base64').toString()),
+        payload: JSON.parse(Buffer.from(payload, 'base64').toString())
+      }, 'Decoded token parts');
+    } catch (error) {
+      reqLog.error({ error }, 'Error decoding token parts');
     }
 
     // Verify OIDC token
@@ -221,14 +227,14 @@ app.post('/generate-token', async (req, res) => {
       clockTolerance: 60 // Allow 1 minute clock skew
     }, async (err, decoded) => {
       if (err) {
-        console.error('Token verification failed:', err);
+        reqLog.error({ err }, 'Token verification failed');
         return res.status(403).json({ 
           error: 'Token verification failed',
           details: err.message
         });
       }
 
-      if (DEBUG) console.log('Decoded token:', decoded);
+      reqLog.debug({ decoded }, 'Token verified successfully');
 
       // Extract repository information from the token
       const repo = decoded.repository;
@@ -248,16 +254,18 @@ app.post('/generate-token', async (req, res) => {
           {
             retries: 0,
             onFailedAttempt: error => {
-              console.error(
-                `Failed to generate token (attempt ${error.attemptNumber}): ${error.message}`
-              );
+              reqLog.error({ 
+                attempt: error.attemptNumber,
+                error: error.message 
+              }, 'Failed to generate token');
             }
           }
         );
 
+        reqLog.info('Token generated successfully');
         return res.json(result);
       } catch (error) {
-        console.error('Error generating token:', error);
+        reqLog.error({ error }, 'Error generating token');
         return res.status(500).json({ 
           error: 'Failed to generate token',
           details: error.message
@@ -265,7 +273,7 @@ app.post('/generate-token', async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Error processing request:', error);
+    reqLog.error({ error }, 'Error processing request');
     return res.status(400).json({ 
       error: 'Failed to decode token',
       details: error.message
@@ -275,10 +283,10 @@ app.post('/generate-token', async (req, res) => {
 
 // Health check endpoint
 app.get('/health', (req, res) => {
+  req.log.info('Health check requested');
   res.json({ status: 'ok' });
 });
 
 app.listen(port, () => {
-  console.log(`🦉 TokenBureau server running on port ${port}`);
-  if (DEBUG) console.log('Debug mode enabled');
+  logger.info({ port }, '🦉 TokenBureau server running');
 });

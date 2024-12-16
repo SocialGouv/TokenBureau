@@ -56,14 +56,23 @@ function formatPrivateKey(key) {
 
 const privateKey = formatPrivateKey(process.env.GITHUB_PRIVATE_KEY);
 
-// Log key format in debug mode
-if (process.env.DEBUG === 'true') {
-  console.log('Private key format check:');
-  console.log('- Starts with correct header:', privateKey.startsWith('-----BEGIN RSA PRIVATE KEY-----'));
-  console.log('- Ends with correct footer:', privateKey.endsWith('-----END RSA PRIVATE KEY-----'));
-  console.log('- Contains newlines:', privateKey.includes('\n'));
-  console.log('- First line:', privateKey.split('\n')[0]);
-}
+// Configure logger options
+const loggerConfig = {
+  development: {
+    transport: {
+      target: 'pino-pretty',
+      options: {
+        colorize: true,
+        levelFirst: true,
+        translateTime: 'SYS:standard'
+      }
+    },
+    level: process.env.DEBUG === 'true' ? 'debug' : 'info'
+  },
+  production: {
+    level: 'info'
+  }
+};
 
 // Export configuration with defaults
 export default {
@@ -75,5 +84,6 @@ export default {
   oidc: {
     audience: process.env.OIDC_AUDIENCE,
     issuer: 'https://token.actions.githubusercontent.com'
-  }
+  },
+  logger: loggerConfig[process.env.NODE_ENV === 'production' ? 'production' : 'development']
 };
