@@ -1,0 +1,37 @@
+name: Example TokenBureau Usage
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+permissions:
+  # Required for OIDC token generation
+  id-token: write
+  # Add other permissions your workflow needs
+  contents: write
+
+jobs:
+  example:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get GitHub App Token
+        id: token
+        uses: SocialGouv/token-bureau@v1
+        with:
+          token-bureau-url: https://your-token-bureau-service.com
+          audience: your-audience-value
+
+      # Example: Use the token to create a release
+      - name: Create Release
+        env:
+          GITHUB_TOKEN: ${{ steps.token.outputs.token }}
+        run: |
+          curl -X POST \
+            -H "Authorization: token $GITHUB_TOKEN" \
+            -H "Content-Type: application/json" \
+            "https://api.github.com/repos/${{ github.repository }}/releases" \
+            -d '{
+              "tag_name": "v1.0.0",
+              "name": "Release v1.0.0",
+              "body": "Release created using TokenBureau generated token"
+            }'

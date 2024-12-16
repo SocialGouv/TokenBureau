@@ -1,0 +1,37 @@
+# Version Control
+.git
+.gitignore
+
+# IDE and editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Node
+**/node_modules
+.env*
+*.log
+tmp/
+temp/
+
+# Docker related
+docker-compose*.yml
+Dockerfile*
+.docker/
+
+# Documentation
+*.md
+docs/
+
+# Misc
+.DS_Store
+*.pprof
+*.cpu
+*.mem
+*.trace
+
+# Project specific
+/action
+/examples

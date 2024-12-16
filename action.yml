@@ -1,0 +1,21 @@
+name: 'Token-Bureau'
+description: 'Generate GitHub App tokens with OIDC verification'
+inputs:
+  token-bureau-url:
+    description: 'URL of the Token-Bureau service'
+    required: true
+  audience:
+    description: 'OIDC audience value'
+    required: true
+
+outputs:
+  token:
+    description: 'The generated GitHub App token'
+  expires_at:
+    description: 'Token expiration timestamp'
+  installation_id:
+    description: 'GitHub App installation ID'
+
+runs:
+  using: 'node22'
+  main: 'action/index.js'

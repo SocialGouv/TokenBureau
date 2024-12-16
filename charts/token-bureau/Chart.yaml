@@ -1,0 +1,8 @@
+apiVersion: v2
+name: token-bureau
+description: A Helm chart for Token-Bureau - External endpoint for generating GitHub App tokens with OIDC verification
+type: application
+version: 0.1.0
+appVersion: "0.0.0"
+maintainers:
+  - name: SocialGouv
