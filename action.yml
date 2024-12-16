@@ -18,5 +18,5 @@ outputs:
 
 runs:
   using: 'node20'
-  pre: 'yarn'
+  pre: 'npm install -g yarn && yarn'
   main: 'action.js'
