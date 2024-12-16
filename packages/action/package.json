@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "build": "ncc build index.js -o dist"
+    "build": "ncc build index.js -o ../../dist"
   },
   "packageManager": "yarn@4.5.3",
   "dependencies": {
