@@ -64,7 +64,7 @@ const loggerConfig = {
       options: {
         colorize: true,
         levelFirst: true,
-        translateTime: 'SYS:standard'
+        ignore: 'pid,hostname,time'
       }
     },
     level: process.env.DEBUG === 'true' ? 'debug' : 'info',
@@ -74,7 +74,9 @@ const loggerConfig = {
           level: label
         }
       }
-    }
+    },
+    timestamp: false,
+    hostname: false
   },
   production: {
     level: 'info',
@@ -84,7 +86,9 @@ const loggerConfig = {
           level: label
         }
       }
-    }
+    },
+    timestamp: false,
+    hostname: false
   }
 };
 

@@ -18,7 +18,7 @@ const port = config.port;
 app.use(pinoHttp({
   logger,
   autoLogging: {
-    ignore: (req) => req.url === '/health'
+    ignore: (req) => req.url === '/health' || req.url === '/'
   },
   customLogLevel: function (res, err) {
     if (res.statusCode >= 400 && res.statusCode < 500) return 'warn'
