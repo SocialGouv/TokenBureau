@@ -137,7 +137,7 @@ async function generateToken(owner, repository) {
         permissions: {
           contents: "write",
           metadata: "read",
-          issues: "write"  // Added issues permission
+          // issues: "write"  // Added issues permission
         }
       });
 

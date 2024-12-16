@@ -101,6 +101,35 @@ yarn start
    - Note the App ID
    - Add these to your environment configuration
 
+## Troubleshooting
+
+### Permission Errors
+
+If you encounter the error "The permissions requested are not granted to this installation", follow these steps:
+
+1. **Update GitHub App Permissions**:
+   - Go to your GitHub App settings
+   - Under "Permissions & events", ensure all required permissions are configured:
+     - Repository Contents: Read & write
+     - Metadata: Read-only
+     - Issues: Read & write
+     - Pull requests: Read & write
+   - Click "Save changes"
+
+2. **Update Existing Installations**:
+   - After updating permissions, GitHub will prompt all existing installations to review and accept the new permissions
+   - Go to your GitHub App's "Install App" tab
+   - For each organization/account where the app is installed:
+     - Click "Configure"
+     - You should see a banner asking to review and accept the new permissions
+     - Review and accept the new permissions
+   - Alternatively, you can uninstall and reinstall the app to immediately get the new permissions
+
+3. **Verify Permissions**:
+   - After accepting new permissions, it may take a few minutes for changes to propagate
+   - You can verify the permissions are active by checking the installation settings
+   - If issues persist, try uninstalling and reinstalling the app
+
 ## Security Features
 
 - OIDC token verification using GitHub's JWKS endpoint
