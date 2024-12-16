@@ -2976,18 +2976,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pino-http@npm:^10.3.0":
-  version: 10.3.0
-  resolution: "pino-http@npm:10.3.0"
-  dependencies:
-    get-caller-file: "npm:^2.0.5"
-    pino: "npm:^9.0.0"
-    pino-std-serializers: "npm:^7.0.0"
-    process-warning: "npm:^4.0.0"
-  checksum: 10c0/da95d93e1176c02201f9b9bb0af53ad737105c5772acbb077dcad0f52ebce2438e0e9fc8216cd96396d1305d0ecf1f1d23142c7a50110a701ea093b2ee999ea7
-  languageName: node
-  linkType: hard
-
 "pino-pretty@npm:^13.0.0":
   version: 13.0.0
   resolution: "pino-pretty@npm:13.0.0"
@@ -3018,7 +3006,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pino@npm:^9.0.0, pino@npm:^9.5.0":
+"pino@npm:^9.5.0":
   version: 9.5.0
   resolution: "pino@npm:9.5.0"
   dependencies:
@@ -3842,7 +3830,6 @@ __metadata:
     jwks-rsa: "npm:^3.1.0"
     p-retry: "npm:^6.2.1"
     pino: "npm:^9.5.0"
-    pino-http: "npm:^10.3.0"
     pino-pretty: "npm:^13.0.0"
   languageName: unknown
   linkType: soft
