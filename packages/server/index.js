@@ -17,6 +17,9 @@ const port = config.port;
 // Add request logging middleware
 app.use(pinoHttp({
   logger,
+  autoLogging: {
+    ignore: (req) => req.url === '/health'
+  },
   customLogLevel: function (res, err) {
     if (res.statusCode >= 400 && res.statusCode < 500) return 'warn'
     if (res.statusCode >= 500 || err) return 'error'
@@ -283,7 +286,6 @@ app.post('/generate-token', async (req, res) => {
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-  req.log.info('Health check requested');
   res.json({ status: 'ok' });
 });
 
