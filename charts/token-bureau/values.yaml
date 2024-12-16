@@ -36,6 +36,18 @@ ingress:
           pathType: ImplementationSpecific
   tls: []
 
+probes:
+  liveness:
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+  readiness:
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+
 resources:
   limits:
     cpu: 200m

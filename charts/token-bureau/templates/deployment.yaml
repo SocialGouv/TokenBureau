@@ -1,4 +1,4 @@
-{{- if .Values.existingSecret -}}
+{{- if .Values.existingSecret }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -38,6 +38,22 @@ spec:
             - name: http
               containerPort: 3000
               protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: {{ .Values.probes.liveness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.probes.liveness.periodSeconds }}
+            timeoutSeconds: {{ .Values.probes.liveness.timeoutSeconds }}
+            failureThreshold: {{ .Values.probes.liveness.failureThreshold }}
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: {{ .Values.probes.readiness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.probes.readiness.periodSeconds }}
+            timeoutSeconds: {{ .Values.probes.readiness.timeoutSeconds }}
+            failureThreshold: {{ .Values.probes.readiness.failureThreshold }}
           envFrom:
             - secretRef:
                 name: {{ .Values.existingSecret }}
@@ -55,6 +71,6 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-{{- else -}}
-{{- fail "You must provide an existing secret name in .Values.existingSecret" -}}
-{{- end -}}
+{{- else }}
+{{- fail "You must provide an existing secret name in .Values.existingSecret" }}
+{{- end }}

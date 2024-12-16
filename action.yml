@@ -17,5 +17,5 @@ outputs:
     description: 'GitHub App installation ID'
 
 runs:
-  using: 'node22'
+  using: 'node20'
   main: 'action/index.js'
