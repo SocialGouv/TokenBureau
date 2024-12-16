@@ -67,10 +67,24 @@ const loggerConfig = {
         translateTime: 'SYS:standard'
       }
     },
-    level: process.env.DEBUG === 'true' ? 'debug' : 'info'
+    level: process.env.DEBUG === 'true' ? 'debug' : 'info',
+    formatters: {
+      level: (label) => {
+        return {
+          level: label
+        }
+      }
+    }
   },
   production: {
-    level: 'info'
+    level: 'info',
+    formatters: {
+      level: (label) => {
+        return {
+          level: label
+        }
+      }
+    }
   }
 };
 
