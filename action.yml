@@ -18,4 +18,5 @@ outputs:
 
 runs:
   using: 'node20'
+  pre: 'yarn'
   main: 'action.js'
