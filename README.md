@@ -87,8 +87,9 @@ yarn start
 1. Create a GitHub App:
    - Navigate to **Settings** > **Developer settings** > **GitHub Apps** > **New GitHub App**
    - Set required permissions:
-     - **Contents**: **Read & Write**
-     - **Metadata**: **Read**
+     - **Contents**: **Read & Write** (Required for repository content access)
+     - **Metadata**: **Read** (Required for basic repository information)
+     - **Issues**: **Read & Write** (Required for semantic-release to create and manage issues)
 
 2. Install the GitHub App:
    - Go to the **Install App** tab
