@@ -152,6 +152,7 @@ async function generateToken(owner, repository) {
         permissions: {
           contents: "write",
           metadata: "read",
+          issues: "write"
         }
       });
 
