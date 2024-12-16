@@ -113,7 +113,7 @@ yarn start
 To run the server in development mode with auto-reload:
 
 ```bash
-yarn dev
+yarn workspace token-bureau-server dev
 ```
 
 ## License

@@ -1,0 +1,13 @@
+{
+  "name": "token-bureau-action",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "build": "ncc build index.js -o dist"
+  },
+  "packageManager": "yarn@4.5.3",
+  "dependencies": {
+    "@actions/core": "^1.11.1",
+    "@vercel/ncc": "^0.38.3"
+  }
+}

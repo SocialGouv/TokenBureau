@@ -1,0 +1,22 @@
+{
+  "name": "token-bureau-server",
+  "version": "0.0.1",
+  "private": true,
+  "description": "External endpoint for generating GitHub App tokens with OIDC verification",
+  "packageManager": "yarn@4.5.3",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "release": "commit-and-tag-version"
+  },
+  "dependencies": {
+    "@octokit/auth-app": "^7.1.3",
+    "@octokit/request": "^9.1.3",
+    "dotenv": "^16.4.7",
+    "express": "^5.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "jwks-rsa": "^3.1.0",
+    "p-retry": "^6.2.1"
+  }
+}

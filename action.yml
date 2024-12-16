@@ -11,21 +11,15 @@ inputs:
 outputs:
   token:
     description: 'The generated GitHub App token'
-    value: ${{ steps.main.outputs.token }}
   expires_at:
     description: 'Token expiration timestamp'
-    value: ${{ steps.main.outputs.expires_at }}
   installation_id:
     description: 'GitHub App installation ID'
-    value: ${{ steps.main.outputs.installation_id }}
 
 runs:
-  using: 'composite'
-  steps:
-    - shell: bash
-      run: |
-        npm install -g yarn
-        yarn
-    - id: main
-      shell: node20
-      run: action.js
+  using: 'node20'
+  main: 'dist/index.js'
+
+branding:
+  icon: 'lock'
+  color: 'blue'
