@@ -13,7 +13,7 @@ permissions:
 steps:
   - name: Get GitHub App Token
     id: token
-    uses: SocialGouv/token-bureau@v1
+    uses: SocialGouv/token-bureau@main
     with:
       token-bureau-url: https://your-token-bureau-service.com
       audience: your-audience-value
