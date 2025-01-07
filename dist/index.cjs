@@ -27593,33 +27593,45 @@ async function run() {
     const tokenBureauUrl = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('token-bureau-url', { required: true });
     const audience = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('audience', { required: true });
 
+    _actions_core__WEBPACK_IMPORTED_MODULE_0__.debug(`Using token-bureau-url: ${tokenBureauUrl}`);
+    _actions_core__WEBPACK_IMPORTED_MODULE_0__.debug(`Using audience: ${audience}`);
+
     // Get OIDC token from GitHub Actions
     const idToken = await _actions_core__WEBPACK_IMPORTED_MODULE_0__.getIDToken(audience);
+    _actions_core__WEBPACK_IMPORTED_MODULE_0__.debug('Successfully obtained OIDC token');
     
     // Extract current repository from environment
     const repository = process.env.GITHUB_REPOSITORY?.split('/')[1];
     if (!repository) {
       throw new Error('GITHUB_REPOSITORY environment variable is not set');
     }
+    _actions_core__WEBPACK_IMPORTED_MODULE_0__.debug(`Repository: ${repository}`);
 
     // Request token from TokenBureau
+    _actions_core__WEBPACK_IMPORTED_MODULE_0__.debug('Sending request to TokenBureau');
     const response = await fetch(`${tokenBureauUrl}/generate-token`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${idToken}`,
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'User-Agent': 'token-bureau-action'
       },
       body: JSON.stringify({
         repositories: [repository]
       })
     });
 
+    _actions_core__WEBPACK_IMPORTED_MODULE_0__.debug(`Response status: ${response.status}`);
+
     if (!response.ok) {
       const error = await response.text();
+      _actions_core__WEBPACK_IMPORTED_MODULE_0__.error(`Error response: ${error}`);
       throw new Error(`Failed to get token: ${error}`);
     }
 
     const data = await response.json();
+    _actions_core__WEBPACK_IMPORTED_MODULE_0__.debug('Successfully received token response');
 
     // Set outputs
     _actions_core__WEBPACK_IMPORTED_MODULE_0__.setSecret(data.token);
@@ -27627,7 +27639,9 @@ async function run() {
     _actions_core__WEBPACK_IMPORTED_MODULE_0__.setOutput('expires_at', data.expires_at);
     _actions_core__WEBPACK_IMPORTED_MODULE_0__.setOutput('installation_id', data.installation_id);
 
+    _actions_core__WEBPACK_IMPORTED_MODULE_0__.debug('Action completed successfully');
   } catch (error) {
+    _actions_core__WEBPACK_IMPORTED_MODULE_0__.error(`Action failed: ${error.message}`);
     _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed(error.message);
   }
 }
