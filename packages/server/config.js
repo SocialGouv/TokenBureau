@@ -89,11 +89,10 @@ const loggerConfig = {
         return {
           level: label
         }
-      }
+      },
+      bindings: () => ({})  // This removes hostname and pid
     },
-    timestamp: false,
-    hostname: false,
-    pid: false,
+    timestamp: false
   }
 };
 
