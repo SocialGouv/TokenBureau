@@ -28,7 +28,8 @@ app.use((req, res, next) => {
     requestId,
     method: req.method,
     url: req.url,
-    ip: req.ip
+    ip: req.ip,
+    headers: req.headers, // Add headers logging
   }, 'Incoming request');
 
   // Log response
@@ -185,31 +186,29 @@ async function generateToken(owner, repository) {
 }
 
 function extractAndDecodeToken(authHeader) {
+  logger.debug({ authHeader }, 'Processing authorization header'); // Add debug log
+
   if (!authHeader?.startsWith('Bearer ')) {
+    logger.error({ authHeader }, 'Authorization header missing or invalid format');
     throw new Error('Missing or invalid Authorization header');
   }
 
   let tokenPayload = authHeader.split(' ')[1];
 
-  logger.debug('Token payload received');
+  logger.debug({ tokenPayload: tokenPayload.substring(0, 20) + '...' }, 'Token payload received');
 
-  // Try to parse as JSON first
-  try {
-    const parsed = JSON.parse(tokenPayload);
-    if (parsed.value) {
-      logger.debug('Found token in JSON value field');
-      tokenPayload = parsed.value;
-    }
-  } catch (e) {
-    logger.debug('Token is not in JSON format, using as is');
-  }
-
+  // Remove JSON parsing attempt as it's not needed
+  // The token should always be a plain JWT string
+  
   // Remove any whitespace or quotes
   tokenPayload = tokenPayload.trim().replace(/^["']|["']$/g, '');
+
+  logger.debug({ tokenLength: tokenPayload.length }, 'Processed token length');
 
   // Basic JWT structure validation
   const parts = tokenPayload.split('.');
   if (parts.length !== 3) {
+    logger.error({ parts: parts.length }, 'Invalid JWT structure');
     throw new Error('Invalid JWT format - token must have three parts');
   }
 
@@ -219,7 +218,10 @@ function extractAndDecodeToken(authHeader) {
 // Route to generate GitHub App token
 app.post('/generate-token', async (req, res) => {
   try {
-    logger.debug('Processing token generation request');
+    logger.debug({
+      headers: req.headers,
+      body: req.body
+    }, 'Processing token generation request');
 
     const tokenPayload = extractAndDecodeToken(req.headers.authorization);
 
@@ -238,7 +240,7 @@ app.post('/generate-token', async (req, res) => {
         });
       }
 
-      logger.debug('Token verified successfully');
+      logger.debug({ decoded }, 'Token verified successfully');
 
       // Extract repository information from the token
       const repo = decoded.repository;
