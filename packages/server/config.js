@@ -10,10 +10,14 @@ dotenv.config({ path: join(__dirname, '..', '.env') });
 
 // Required environment variables
 const requiredEnvVars = [
-  'GITHUB_APP_ID',
   'GITHUB_PRIVATE_KEY',
   'OIDC_AUDIENCE'
 ];
+
+// At least one of these is required
+if (!process.env.GITHUB_APP_ID && !process.env.GITHUB_CLIENT_ID) {
+  throw new Error('Either GITHUB_APP_ID or GITHUB_CLIENT_ID must be provided');
+}
 
 // Validate required environment variables
 for (const envVar of requiredEnvVars) {
@@ -96,7 +100,8 @@ const loggerConfig = {
 export default {
   port: process.env.PORT || 3000,
   github: {
-    appId: process.env.GITHUB_APP_ID,
+    // Prefer client ID if available, fall back to app ID
+    appId: process.env.GITHUB_CLIENT_ID || process.env.GITHUB_APP_ID,
     privateKey: privateKey
   },
   oidc: {
