@@ -92,7 +92,8 @@ const loggerConfig = {
       }
     },
     timestamp: false,
-    hostname: false
+    hostname: false,
+    pid: false,
   }
 };
 
