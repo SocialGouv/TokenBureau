@@ -9,10 +9,14 @@ imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
 
+labels: {}
+
 serviceAccount:
   create: true
   annotations: {}
   name: ""
+
+deploymentAnnotations: {}
 
 podAnnotations: {}
 
@@ -48,18 +52,12 @@ probes:
     timeoutSeconds: 5
     failureThreshold: 3
 
-resources:
-  limits:
-    cpu: 200m
-    memory: 256Mi
-  requests:
-    cpu: 100m
-    memory: 128Mi
-
+resources: {}
+  
 autoscaling:
   enabled: false
-  minReplicas: 1
-  maxReplicas: 100
+  minReplicas: 2
+  maxReplicas: 10
   targetCPUUtilizationPercentage: 80
 
 nodeSelector: {}
