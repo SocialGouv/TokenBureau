@@ -28,8 +28,6 @@ app.use((req, res, next) => {
     requestId,
     method: req.method,
     url: req.url,
-    ip: req.ip,
-    headers: req.headers, // Add headers logging
   }, 'Incoming request');
 
   // Log response
