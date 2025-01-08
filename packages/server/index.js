@@ -153,6 +153,7 @@ async function generateToken(owner, repository) {
           metadata: "read",
           issues: "write",
           pull_requests: "write",
+          deployments: "write",
         }
       });
 
