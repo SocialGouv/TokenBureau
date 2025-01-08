@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.0.3](https://github.com/SocialGouv/token-bureau/compare/v0.0.2...v0.0.3) (2025-01-08)
+
+
+### Bug Fixes
+
+* action debug logs ([cc7d4d3](https://github.com/SocialGouv/token-bureau/commit/cc7d4d3c0e121bbc690a60880b38ee19f7672d91))
+* clean logs ([6d80f72](https://github.com/SocialGouv/token-bureau/commit/6d80f72fe58de756cc6a310e71fe1f6b376d489c))
+* clean logs ([d2dbae6](https://github.com/SocialGouv/token-bureau/commit/d2dbae6fbbd065ecaadf1d1742a4d0ecd928dea1))
+* debug wip ([46ab261](https://github.com/SocialGouv/token-bureau/commit/46ab2611d922d05abfb91873a6f7df653dc2cf70))
+* improve helm chart ([b1c9e6f](https://github.com/SocialGouv/token-bureau/commit/b1c9e6fe71e0d49aff8571c151ef49c7c8af6029))
+* perm deployments ([e4c9bb2](https://github.com/SocialGouv/token-bureau/commit/e4c9bb2717e95b28aec2b7634da27dd740910620))
+* up to use new GITHUB_CLIENT_ID api + wip ([3def986](https://github.com/SocialGouv/token-bureau/commit/3def9867a809d189fe985e69eead51c9f3d58ac6))
+
 ## [0.0.2](https://github.com/SocialGouv/token-bureau/compare/v0.0.1...v0.0.2) (2024-12-17)
 
 
