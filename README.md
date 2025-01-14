@@ -26,11 +26,107 @@ steps:
       # Your commands using the token
 ```
 
+### Action Inputs
+
+- `token-bureau-url`: (Required) URL of the Token-Bureau service
+- `audience`: (Required) OIDC audience value
+- `permissions`: (Optional) JSON string of GitHub App permissions to request. Must be allowed by server configuration.
+  ```yaml
+  permissions: '{"contents": "read", "issues": "write"}'
+  ```
+
 ### Action Outputs
 
 - `token`: The generated GitHub App token
 - `expires_at`: Token expiration timestamp
 - `installation_id`: GitHub App installation ID
+
+### Fine-Grained Permissions
+
+Token-Bureau supports fine-grained permission control through server configuration and per-workflow requests.
+
+#### Server Configuration
+
+Create a `permissions.yml` file in the server's config directory:
+
+```yaml
+# Default permissions that apply to all repositories
+default:
+  permissions:
+    contents: write
+    metadata: read
+    issues: write
+    pull_requests: write
+
+# Repository-specific permission overrides
+repositories:
+  "myorg/*":  # Organization-wide defaults
+    permissions:
+      contents: read
+      issues: read
+  
+  "myorg/specific-repo":  # Repository-specific override
+    permissions:
+      contents: write
+      issues: none  # Disable issues permission
+
+```
+
+Available permissions:
+- contents
+- metadata
+- issues
+- pull_requests
+- deployments
+- packages
+- actions
+- security_events
+- statuses
+- checks
+- discussions
+- pages
+- workflows
+
+Access levels:
+- read
+- write
+- none (to explicitly disable)
+
+#### Permission Inheritance
+
+Permissions are resolved in the following order:
+1. Default permissions (base level)
+2. Organization wildcard overrides (e.g., "myorg/*")
+3. Repository-specific overrides
+4. Requested permissions (must be within allowed scope)
+
+#### Workflow Usage Examples
+
+Basic usage (uses default permissions):
+```yaml
+- uses: SocialGouv/token-bureau@main
+  with:
+    token-bureau-url: https://your-token-bureau.com
+    audience: your-audience
+```
+
+Request specific permissions:
+```yaml
+- uses: SocialGouv/token-bureau@main
+  with:
+    token-bureau-url: https://your-token-bureau.com
+    audience: your-audience
+    permissions: '{"contents": "read", "issues": "write"}'
+```
+
+Least privilege example:
+```yaml
+- uses: SocialGouv/token-bureau@main
+  with:
+    token-bureau-url: https://your-token-bureau.com
+    audience: your-audience
+    permissions: '{"contents": "read"}'  # Request only needed permissions
+```
 
 ## Server Setup
 
