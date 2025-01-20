@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.0.6](https://github.com/SocialGouv/token-bureau/compare/v0.0.5...v0.0.6) (2025-01-20)
+
+
+### Bug Fixes
+
+* server wip ([8b4f7dd](https://github.com/SocialGouv/token-bureau/commit/8b4f7ddefee71def78ef4cfb39eb9e10e9442c6f))
+
 ## [0.0.5](https://github.com/SocialGouv/token-bureau/compare/v0.0.4...v0.0.5) (2025-01-20)
 
 
