@@ -197,6 +197,27 @@ yarn start
    - Note the App ID
    - Add these to your environment configuration
 
+## Repository Rules Bypass
+
+When using repository rulesets, you must add the GitHub App to the bypass list for any rules that might interfere with its operation:
+
+1. Navigate to your repository or organization settings
+   - Repository: `https://github.com/[owner]/[repo]/settings/rules`
+   - Organization: `https://github.com/organizations/[org]/settings/rules`
+
+2. For each ruleset that might affect the app's operations:
+   - Click on the ruleset name
+   - Scroll to "Bypass list"
+   - Click "Add bypass"
+   - Select your GitHub App from the list
+   - Click "Add bypass" to confirm
+
+This is particularly important for rulesets that:
+- Require status checks
+- Control branch/tag creation or deletion
+- Enforce commit signing
+- Restrict push access
+
 ## Troubleshooting
 
 ### Permission Errors
