@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.0.5](https://github.com/SocialGouv/token-bureau/compare/v0.0.4...v0.0.5) (2025-01-20)
+
+
+### Bug Fixes
+
+* docker-release workflow ([aee02ba](https://github.com/SocialGouv/token-bureau/commit/aee02ba36e7cb4c64ab0a3883570b6fa542166dc))
+
 ## [0.0.4](https://github.com/SocialGouv/token-bureau/compare/v0.0.3...v0.0.4) (2025-01-20)
 
 
