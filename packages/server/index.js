@@ -14,6 +14,9 @@ const logger = pino(config.logger);
 const app = express();
 const port = config.port;
 
+// Middleware
+app.use(express.json());
+
 // Custom request logging middleware
 app.use((req, res, next) => {
   // Skip logging for health checks
@@ -23,6 +26,9 @@ app.use((req, res, next) => {
 
   const startTime = Date.now();
   const requestId = Math.random().toString(36).substring(2, 15);
+
+  // Set JSON content type for all API responses
+  res.setHeader('Content-Type', 'application/json');
 
   // Log request
   logger.info({
@@ -48,8 +54,18 @@ app.use((req, res, next) => {
   next();
 });
 
-// Middleware
-app.use(express.json());
+// Error handling middleware - must be after all other middleware
+app.use((err, req, res, next) => {
+  logger.error({ error: err.message }, 'Middleware error caught');
+  
+  // Ensure we always send JSON responses, even in error cases
+  res.setHeader('Content-Type', 'application/json');
+  
+  return res.status(500).json({
+    error: 'Internal server error',
+    details: err.message
+  });
+});
 
 // Setup JWKS Client for GitHub Actions OIDC
 const client = jwksClient({
@@ -59,18 +75,21 @@ const client = jwksClient({
 });
 
 // Function to get signing key
-function getKey(header) {
-  return new Promise((resolve, reject) => {
-    logger.debug({ kid: header.kid }, 'Getting signing key');
-    
-    client.getSigningKey(header.kid, (err, key) => {
-      if (err) {
-        logger.error({ err }, 'Error getting signing key');
-        return reject(err);
-      }
+function getKey(header, callback) {
+  logger.debug({ kid: header.kid }, 'Getting signing key');
+  
+  client.getSigningKey(header.kid, (err, key) => {
+    if (err) {
+      logger.error({ err }, 'Error getting signing key');
+      return callback(err);
+    }
+    try {
       const signingKey = key.getPublicKey();
-      resolve(signingKey);
-    });
+      callback(null, signingKey);
+    } catch (error) {
+      logger.error({ error }, 'Error getting public key');
+      callback(error);
+    }
   });
 }
 
@@ -223,7 +242,16 @@ app.post('/generate-token', async (req, res) => {
     }, 'Processing token generation request');
 
     const tokenPayload = extractAndDecodeToken(req.headers.authorization);
-    const requestedPermissions = req.body.permissions;
+    
+    // Handle both direct permissions object and wrapped format
+    const requestedPermissions = req.body.permissions || 
+      (typeof req.body === 'object' && !Array.isArray(req.body) ? req.body : undefined);
+
+    logger.debug({ 
+      bodyType: typeof req.body,
+      body: req.body,
+      requestedPermissions 
+    }, 'Parsed request body');
 
     // Verify OIDC token
     const decoded = await new Promise((resolve, reject) => {
@@ -234,11 +262,14 @@ app.post('/generate-token', async (req, res) => {
         clockTolerance: 60 // Allow 1 minute clock skew
       }, (err, decoded) => {
         if (err) {
-          reject(err);
+          logger.error({ error: err }, 'JWT verification failed');
+          reject(new Error(`Token verification failed: ${err.message}`));
         } else {
           resolve(decoded);
         }
       });
+    }).catch(error => {
+      throw error; // Re-throw to be caught by outer try-catch
     });
 
     logger.debug({ decoded }, 'Token verified successfully');
@@ -253,24 +284,36 @@ app.post('/generate-token', async (req, res) => {
       });
     }
 
-    // Generate token with retry logic
-    const result = await pRetry(
-      () => generateToken(repoOwner, repo, requestedPermissions),
-      {
-        retries: 0,
-        onFailedAttempt: error => {
-          logger.error({ 
-            attempt: error.attemptNumber,
-            error: error.message 
-          }, 'Failed to generate token');
+    try {
+      // Generate token with retry logic
+      const result = await pRetry(
+        () => generateToken(repoOwner, repo, requestedPermissions),
+        {
+          retries: 0,
+          onFailedAttempt: error => {
+            logger.error({ 
+              attempt: error.attemptNumber,
+              error: error.message 
+            }, 'Failed to generate token');
+          }
         }
-      }
-    );
+      );
 
-    logger.info('Token generated successfully');
-    return res.json(result);
+      logger.info('Token generated successfully');
+      res.setHeader('Content-Type', 'application/json');
+      return res.json(result);
+    } catch (error) {
+      logger.error({ error: error.message }, 'Token generation failed');
+      res.setHeader('Content-Type', 'application/json');
+      return res.status(500).json({
+        error: 'Failed to generate token',
+        details: error.message
+      });
+    }
   } catch (error) {
     logger.error({ error: error.message }, 'Error processing request');
+    
+    res.setHeader('Content-Type', 'application/json');
     
     if (error.message.includes('Token verification failed')) {
       return res.status(403).json({
