@@ -61,8 +61,19 @@ spec:
           envFrom:
             - secretRef:
                 name: {{ .Values.existingSecret }}
+          volumeMounts:
+            - name: permissions-config
+              mountPath: /app/config
+              readOnly: true
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+        - name: permissions-config
+          configMap:
+            name: {{ include "token-bureau.fullname" . }}-permissions
+            items:
+              - key: permissions.yml
+                path: permissions.yml
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

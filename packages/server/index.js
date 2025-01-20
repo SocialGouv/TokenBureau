@@ -6,6 +6,7 @@ import { request } from '@octokit/request';
 import pRetry from 'p-retry';
 import pino from 'pino';
 import config from './config.js';
+import { getEffectivePermissions } from './permissions.js';
 
 // Initialize logger
 const logger = pino(config.logger);
@@ -58,20 +59,22 @@ const client = jwksClient({
 });
 
 // Function to get signing key
-function getKey(header, callback) {
-  logger.debug({ kid: header.kid }, 'Getting signing key');
-  
-  client.getSigningKey(header.kid, (err, key) => {
-    if (err) {
-      logger.error({ err }, 'Error getting signing key');
-      return callback(err);
-    }
-    const signingKey = key.getPublicKey();
-    callback(null, signingKey);
+function getKey(header) {
+  return new Promise((resolve, reject) => {
+    logger.debug({ kid: header.kid }, 'Getting signing key');
+    
+    client.getSigningKey(header.kid, (err, key) => {
+      if (err) {
+        logger.error({ err }, 'Error getting signing key');
+        return reject(err);
+      }
+      const signingKey = key.getPublicKey();
+      resolve(signingKey);
+    });
   });
 }
 
-async function generateToken(owner, repository) {
+async function generateToken(owner, repository, requestedPermissions = null) {
   // Extract repository name if it includes owner
   const repoName = repository.includes('/') ? repository.split('/')[1] : repository;
 
@@ -144,17 +147,14 @@ async function generateToken(owner, repository) {
         full_name: repo.full_name
       }, 'Found repository');
 
+      // Get effective permissions based on config and request
+      const permissions = await getEffectivePermissions(owner, repository, requestedPermissions);
+
       // Get installation access token using installation auth
       const { token, expiresAt } = await installationAuth({
         type: "installation",
         repositoryIds: [repo.id],
-        permissions: {
-          contents: "write",
-          metadata: "read",
-          issues: "write",
-          pull_requests: "write",
-          deployments: "write",
-        }
+        permissions
       });
 
       if (!token) {
@@ -223,63 +223,71 @@ app.post('/generate-token', async (req, res) => {
     }, 'Processing token generation request');
 
     const tokenPayload = extractAndDecodeToken(req.headers.authorization);
+    const requestedPermissions = req.body.permissions;
 
     // Verify OIDC token
-    jwt.verify(tokenPayload, getKey, {
-      issuer: 'https://token.actions.githubusercontent.com',
-      audience: config.oidc.audience,
-      algorithms: ['RS256'],
-      clockTolerance: 60 // Allow 1 minute clock skew
-    }, async (err, decoded) => {
-      if (err) {
-        logger.error({ error: err.message }, 'Token verification failed');
-        return res.status(403).json({ 
-          error: 'Token verification failed',
-          details: err.message
-        });
-      }
-
-      logger.debug({ decoded }, 'Token verified successfully');
-
-      // Extract repository information from the token
-      const repo = decoded.repository;
-      const repoOwner = decoded.repository_owner;
-
-      if (!repo || !repoOwner) {
-        return res.status(400).json({ 
-          error: 'Missing repository information in token'
-        });
-      }
-
-      try {
-        // Generate token with retry logic
-        const result = await pRetry(
-          () => generateToken(repoOwner, repo),
-          {
-            retries: 0,
-            onFailedAttempt: error => {
-              logger.error({ 
-                attempt: error.attemptNumber,
-                error: error.message 
-              }, 'Failed to generate token');
-            }
-          }
-        );
-
-        logger.info('Token generated successfully');
-        return res.json(result);
-      } catch (error) {
-        logger.error({ error: error.message }, 'Error generating token');
-        return res.status(500).json({ 
-          error: 'Failed to generate token',
-          details: error.message
-        });
-      }
+    const decoded = await new Promise((resolve, reject) => {
+      jwt.verify(tokenPayload, getKey, {
+        issuer: 'https://token.actions.githubusercontent.com',
+        audience: config.oidc.audience,
+        algorithms: ['RS256'],
+        clockTolerance: 60 // Allow 1 minute clock skew
+      }, (err, decoded) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(decoded);
+        }
+      });
     });
+
+    logger.debug({ decoded }, 'Token verified successfully');
+
+    // Extract repository information from the token
+    const repo = decoded.repository;
+    const repoOwner = decoded.repository_owner;
+
+    if (!repo || !repoOwner) {
+      return res.status(400).json({ 
+        error: 'Missing repository information in token'
+      });
+    }
+
+    // Generate token with retry logic
+    const result = await pRetry(
+      () => generateToken(repoOwner, repo, requestedPermissions),
+      {
+        retries: 0,
+        onFailedAttempt: error => {
+          logger.error({ 
+            attempt: error.attemptNumber,
+            error: error.message 
+          }, 'Failed to generate token');
+        }
+      }
+    );
+
+    logger.info('Token generated successfully');
+    return res.json(result);
   } catch (error) {
     logger.error({ error: error.message }, 'Error processing request');
+    
+    if (error.message.includes('Token verification failed')) {
+      return res.status(403).json({
+        error: 'Token verification failed',
+        details: error.message
+      });
+    }
+    
+    if (error.message.includes('Failed to generate token')) {
+      return res.status(500).json({
+        error: 'Failed to generate token',
+        details: error.message
+      });
+    }
+    
     return res.status(400).json({ 
-      error: 'Failed to decode token',
+      error: 'Failed to process request',
       details: error.message
     });
   }

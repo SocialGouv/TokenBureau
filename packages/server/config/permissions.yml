@@ -1,0 +1,24 @@
+# Default permissions that apply to all repositories
+default:
+  permissions:
+    # Format: permission_name: access_level
+    # access_level can be: read, write, or none
+    contents: write
+    metadata: read
+    issues: write
+    pull_requests: write
+    deployments: write
+
+# Repository-specific permission overrides
+# Format: owner/repo or org/*
+repositories:
+  "example-org/*":  # Applies to all repos in the org
+    permissions:
+      contents: read
+      issues: read
+  
+  "example-org/specific-repo":  # Specific repository override
+    permissions:
+      contents: write
+      issues: write
+      deployments: none

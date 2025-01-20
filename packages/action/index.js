@@ -5,6 +5,7 @@ async function run() {
     // Get inputs
     const tokenBureauUrl = core.getInput('token-bureau-url', { required: true });
     const audience = core.getInput('audience', { required: true });
+    const permissions = core.getInput('permissions');
 
     core.debug(`Using token-bureau-url: ${tokenBureauUrl}`);
     core.debug(`Using audience: ${audience}`);
@@ -31,7 +32,8 @@ async function run() {
         'User-Agent': 'token-bureau-action'
       },
       body: JSON.stringify({
-        repositories: [repository]
+        repositories: [repository],
+        permissions: permissions ? JSON.parse(permissions) : undefined
       })
     });
 

@@ -69,3 +69,26 @@ affinity: {}
 # Secret containing sensitive environment variables
 existingSecret: ""
 # must contains GITHUB_APP_ID and GITHUB_APP_PRIVATE_KEY
+
+# Permissions configuration
+permissions:
+  # Default permissions for all repositories
+  default:
+    permissions:
+      contents: write
+      metadata: read
+      issues: write
+      pull_requests: write
+      deployments: write
+  
+  # Repository-specific permission overrides
+  repositories: {}
+    # Example:
+    # "myorg/*":
+    #   permissions:
+    #     contents: read
+    #     issues: read
+    # "myorg/specific-repo":
+    #   permissions:
+    #     contents: write
+    #     issues: none
