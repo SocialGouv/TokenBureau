@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.0.4](https://github.com/SocialGouv/token-bureau/compare/v0.0.3...v0.0.4) (2025-01-20)
+
+
+### Features
+
+* configurable permissions ([5aec18b](https://github.com/SocialGouv/token-bureau/commit/5aec18bed6d5dbf4a695649718942ee84aa87cac))
+* configurable permissions ([e879f95](https://github.com/SocialGouv/token-bureau/commit/e879f954e503a9b2bc35874226556595839d2965))
+
 ## [0.0.3](https://github.com/SocialGouv/token-bureau/compare/v0.0.2...v0.0.3) (2025-01-08)
 
 
