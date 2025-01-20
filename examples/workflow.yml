@@ -25,6 +25,14 @@ jobs:
           # The audience value must match OIDC_AUDIENCE in your server's environment
           # This is used to validate the OIDC token
           audience: your-audience-value
+          
+          # Specify the permissions for the generated token
+          # These must match the permissions configured in your TokenBureau server
+          permissions: |
+            {
+              "contents": "write",
+              "issues": "read"
+            }
 
       # Example: Use the token to create a release
       - name: Create Release

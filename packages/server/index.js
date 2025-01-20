@@ -245,15 +245,18 @@ app.post('/generate-token', async (req, res) => {
 
     const tokenPayload = extractAndDecodeToken(req.headers.authorization);
     
-    // Handle both direct permissions object and wrapped format
-    const requestedPermissions = req.body.permissions || 
-      (typeof req.body === 'object' && !Array.isArray(req.body) ? req.body : undefined);
+    // Extract permissions from request body
+    const requestedPermissions = req.body.permissions;
 
     logger.debug({ 
       bodyType: typeof req.body,
       body: req.body,
       requestedPermissions 
     }, 'Parsed request body');
+
+    if (requestedPermissions && typeof requestedPermissions !== 'object') {
+      throw new Error('Permissions must be an object mapping permission names to access levels');
+    }
 
     // Verify OIDC token
     const decoded = await new Promise((resolve, reject) => {

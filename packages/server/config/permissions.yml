@@ -8,6 +8,14 @@ default:
     issues: write
     pull_requests: write
     deployments: write
+    # packages: read
+    # actions: read
+    # security_events: read
+    # statuses: read
+    # checks: read
+    # discussions: read
+    # pages: read
+    # workflows: read
 
 # Repository-specific permission overrides
 # Format: owner/repo or org/*

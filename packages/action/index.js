@@ -31,10 +31,9 @@ async function run() {
         'Accept': 'application/json',
         'User-Agent': 'token-bureau-action'
       },
-      body: JSON.stringify({
-        repositories: [repository],
-        permissions: permissions ? JSON.parse(permissions) : undefined
-      })
+      body: JSON.stringify(
+        permissions ? { permissions: JSON.parse(permissions) } : {}
+      )
     });
 
     core.debug(`Response status: ${response.status}`);

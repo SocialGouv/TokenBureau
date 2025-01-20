@@ -27592,6 +27592,7 @@ async function run() {
     // Get inputs
     const tokenBureauUrl = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('token-bureau-url', { required: true });
     const audience = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('audience', { required: true });
+    const permissions = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('permissions');
 
     _actions_core__WEBPACK_IMPORTED_MODULE_0__.debug(`Using token-bureau-url: ${tokenBureauUrl}`);
     _actions_core__WEBPACK_IMPORTED_MODULE_0__.debug(`Using audience: ${audience}`);
@@ -27617,9 +27618,9 @@ async function run() {
         'Accept': 'application/json',
         'User-Agent': 'token-bureau-action'
       },
-      body: JSON.stringify({
-        repositories: [repository]
-      })
+      body: JSON.stringify(
+        permissions ? { permissions: JSON.parse(permissions) } : {}
+      )
     });
 
     _actions_core__WEBPACK_IMPORTED_MODULE_0__.debug(`Response status: ${response.status}`);
