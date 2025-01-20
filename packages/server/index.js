@@ -169,6 +169,8 @@ async function generateToken(owner, repository, requestedPermissions = null) {
       // Get effective permissions based on config and request
       const permissions = await getEffectivePermissions(owner, repository, requestedPermissions);
 
+      logger.debug({ permissions }, 'Calculated effective permissions');
+
       // Get installation access token using installation auth
       const { token, expiresAt } = await installationAuth({
         type: "installation",
