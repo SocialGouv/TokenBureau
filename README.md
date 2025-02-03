@@ -197,7 +197,18 @@ yarn start
    - Note the App ID
    - Add these to your environment configuration
 
-## Repository Rules Bypass
+## Repository Rules and Permissions
+
+### Branch Protection: Rulesets vs Legacy Rules
+
+GitHub offers two ways to protect branches: modern rulesets and legacy branch protection rules. We recommend using rulesets because:
+- Only rulesets allow adding GitHub Apps (like TokenBureau) to global bypass lists
+- Rulesets provide more granular control and modern features
+- They support the same protection features as legacy rules
+
+If you're using legacy branch protection rules, consider migrating to rulesets to ensure TokenBureau can function properly.
+
+### Repository Rules Bypass
 
 When using repository rulesets, you must add the GitHub App to the bypass list for any rules that might interfere with its operation:
 
@@ -217,6 +228,26 @@ This is particularly important for rulesets that:
 - Control branch/tag creation or deletion
 - Enforce commit signing
 - Restrict push access
+- Require pull requests before merging
+
+### Force Push Permissions
+
+Depending on your use case, you may need to grant TokenBureau force push permissions:
+
+1. For Repository Rulesets:
+   - In the ruleset settings, locate the "Restrict force pushes" section
+   - Add TokenBureau to either:
+     - The "Specify who can force push" list
+     - The global bypass list (recommended)
+
+2. For Legacy Branch Protection:
+   - In branch protection settings, find "Allow force pushes"
+   - Add TokenBureau to the list of actors allowed to force push
+   - Note: This is another reason to prefer rulesets, as they offer more flexible force push controls
+
+3. For Branch Restrictions:
+   - If you have "Restrict who can push to matching branches" enabled
+   - Add TokenBureau to the allowed list of actors
 
 ## Troubleshooting
 
